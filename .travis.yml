@@ -4,7 +4,4 @@ install:
     - bundle install
     - pod install --repo-update
 script:
-    - set -o pipefail
-    - xcodebuild -alltargets clean && xcodebuild clean build -sdk iphonesimulator -workspace RealmConverter.xcworkspace -scheme RealmConverteriOS COMPILER_INDEX_STORE_ENABLE=NO CODE_SIGNING_REQUIRED=NO | xcpretty -f `xcpretty-travis-formatter`
-    - xcodebuild -alltargets clean && xcodebuild clean build -sdk macosx -workspace RealmConverter.xcworkspace -scheme RealmConverterMacOS COMPILER_INDEX_STORE_ENABLE=NO CODE_SIGNING_REQUIRED=NO | xcpretty -f `xcpretty-travis-formatter`
-    - pod lib lint
+    - ./build.sh
