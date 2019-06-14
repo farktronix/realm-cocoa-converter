@@ -11,22 +11,33 @@ set -o pipefail
 set -e
 
 CODESIGN_PARAMS="CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO"
-XCODEBUILD_FLAGS="COMPILER_INDEX_STORE_ENABLE=NO"
-DERIVED_DATA_PATH="build/DerivedData"
+XCODEBUILD_FLAGS="" #"COMPILER_INDEX_STORE_ENABLE=NO"
 
 xcode() {
-    local derivedDataPath="${DERIVED_DATA_PATH}"
-    rm -rf $derivedDataPath 
-    mkdir -p $derivedDataPath
-
-    CMD="xcodebuild clean build -derivedDataPath $derivedDataPath $@ | bundle exec xcpretty -f `xcpretty-travis-formatter`"
+    CMD="xcodebuild clean build $CODESIGN_PARAMS $XCODEBUILD_FLAGS $@ | bundle exec xcpretty -f `xcpretty-travis-formatter`"
     echo "Building with command:" $CMD
     eval "$CMD"
 }
 
+build() {
+    local scheme="$1"
+    local sdk="$2"
+    
+    local destination=""
+    local archflags=""
+    if [[ "$sdk" == "iphoneos" ]]; then
+        destination="-destination 'generic/platform=iOS'"
+    elif [[ "$sdk" == "iphonesimulator" ]]; then
+        destination="-destination 'generic/platform=iOS Simulator'"
+        archflags="ONLY_ACTIVE_ARCH=NO"
+    fi
+
+    xcode "-scheme $scheme -sdk $sdk $destination -workspace $workspace $archflags -derivedDataPath build/DerivedData_$sdk"
+}
+
 workspace="RealmConverter.xcworkspace"
-xcode "-scheme 'RealmConverterMacOS' -sdk macosx -workspace $workspace"
-xcode "-scheme 'RealmConverteriOS' -sdk iphoneos -destination 'generic/platform=iOS' -workspace $workspace"
-xcode "-scheme 'RealmConverteriOS' -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -workspace $workspace ONLY_ACTIVE_ARCH=NO"
+build "RealmConverterMacOS" "macosx"
+build "RealmConverteriOS" "iphoneos"
+build "RealmConverteriOS" "iphonesimulator"
 
 pod lib lint --quick
