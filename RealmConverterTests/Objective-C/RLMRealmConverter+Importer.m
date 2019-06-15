@@ -56,6 +56,7 @@
     [super tearDown];
 }
 
+#if TARGET_OS_OSX
 - (void)testXLSXImport {
     NSString *filePath = [self.inputTempFolderPath stringByAppendingPathComponent:@"users.xlsx"];
     RLMImportSchemaGenerator *schemaGenerator = [[RLMImportSchemaGenerator alloc] initWithFile:filePath encoding:EncodingUtf8];
@@ -65,6 +66,7 @@
     RLMXLSXDataImporter *dataImporter = [[RLMXLSXDataImporter alloc] initWithFile:filePath encoding:EncodingUtf8];
     [dataImporter importToPath:outputPath withSchema:schema error:nil];
 }
+#endif
 
 - (NSString *)outputTempFolderPath
 {
